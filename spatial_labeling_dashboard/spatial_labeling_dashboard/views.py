@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, JsonResponse
 from django.conf import settings
 from django.urls import reverse
 
@@ -115,19 +115,23 @@ def stream_minio_parquet_spatial_data(request):
 
     request_body_dict = json.loads(request.body.decode("utf-8"))
     full_parquet_path = f"{request_body_dict['bucket_name']}/{request_body_dict['parquet_path']}"   
-    
-    #gdf = gpd.read_parquet(full_parquet_path, filesystem=fs)
 
-    table = pq.read_table(full_parquet_path, filesystem=fs, columns=['geometry', 'name'])
-    buffer = pa.BufferOutputStream()
-    writer = pq.ParquetWriter(buffer, table.schema)
+    if request_body_dict['format_type'] == "geoarrow_stream":
+        table = pq.read_table(full_parquet_path, filesystem=fs, columns=['geometry', 'name'])
+        buffer = pa.BufferOutputStream()
+        writer = pq.ParquetWriter(buffer, table.schema)
 
-    writer.write_table(table)
-    writer.close()
-    
-    raw_parquet_data = buffer.getvalue().to_pybytes()
-    response = StreamingHttpResponse(
-        iter([raw_parquet_data]),  # Iterable returning raw Parquet bytes
-        content_type='application/octet-stream'  # Set content type for binary data
-    )
-    return response
+        writer.write_table(table)
+        writer.close()
+        
+        raw_parquet_data = buffer.getvalue().to_pybytes()
+        response = StreamingHttpResponse(
+            iter([raw_parquet_data]),  # Iterable returning raw Parquet bytes
+            content_type='application/octet-stream'  # Set content type for binary data
+        )
+        return response
+
+    elif request_body_dict['format_type'] == "geojson":
+        gdf: gpd.GeoDataFrame = gpd.read_parquet(full_parquet_path, filesystem=fs, columns=['geometry', 'name'])
+        geojson = gdf.to_json()
+        return JsonResponse(geojson, safe=False)

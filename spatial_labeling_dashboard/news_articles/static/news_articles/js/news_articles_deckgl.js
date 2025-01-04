@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
                     method: "POST",
                     headers: {"X-CSRFToken": csrftoken},
                     body: JSON.stringify({
+                        format_type: 'geoarrow_stream',
                         parquet_path: e.target.value,
                         bucket_name: minioBucket
                     })
