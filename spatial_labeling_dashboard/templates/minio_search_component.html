@@ -1,0 +1,28 @@
+<div> 
+
+    <label for="minio_bucket_dropdown">Bucket:</label>
+    <select 
+        name="minio_bucket_dropdown" 
+        id="minio_bucket_dropdown"
+        hx-post="{% url 'htmx-render_minio_objects_from_search' %}"
+        hx-target="#minio_objects_table"
+        hx-include="[name='minio_search_prefix']"
+    >
+        {% for bucket in minio_buckets %}
+            <option value="{{bucket}}">{{bucket}}</option>
+        {% endfor %}
+    </select>
+
+    <label for="minio_search_prefix">Prefix:</label>
+    <input 
+        name="minio_search_prefix" 
+        type="text"
+        value=""
+        hx-post="{% url 'htmx-render_minio_objects_from_search' %}"
+        hx-target="#minio_objects_table"
+        hx-trigger="keyup delay:1s"
+        hx-include="[name='minio_bucket_dropdown']"
+    >
+
+    <div id="minio_objects_table"></div>
+</div>

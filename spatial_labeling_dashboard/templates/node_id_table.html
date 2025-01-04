@@ -1,0 +1,32 @@
+<table class="nodeId-table">
+    <tr>
+        <th>Node Id</th>
+        <th>Node Labels</th>
+        <th>Spatially Labeled</th>
+    </tr>
+
+    {% for node in node_records %}
+
+        {% if node.hasSpatialRelationship == False%}
+            <tr class="nodeId-not-cell-spatially-labeled">
+        {% elif node.hasSpatialRelationship == True %}
+            <tr class="nodeId-cell-spatially-labeled">
+        {% endif %}
+
+            <td>
+                <div 
+                    id="selected-nodeId-{{node.nodeId}}"
+                    hx-post={% url 'htmx-generate_node_attrs_table' %}
+                    hx-trigger="click"
+                    hx-target="#unique_node_attrs_table"
+                    hx-vals='{"nodeId": "{{node.nodeId}}"}'
+                    onclick="htmx.ajax('POST', '{% url 'htmx-generate_minio_search_component' %}', {target:'#minio_search_component', swap:'innerHTML'})"
+                >
+                    {{node.nodeId}}
+                </div>
+            </td>
+            <td>{{node.nodeLabels}}</td>
+            <td>{{node.hasSpatialRelationship}}</td>
+        </tr>
+    {% endfor %}
+</table>

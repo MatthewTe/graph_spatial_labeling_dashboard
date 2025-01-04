@@ -1,0 +1,18 @@
+<table class="minio_objects_table">
+    <tr>
+        <th>Name</th>
+        <th>File Size</th>
+        <th>Is Directory</th>
+        <th>Last Modified</th>
+    </tr>
+
+    {% for file_object in minio_objects %}
+    <tr>
+        <td>{{file_object.object_name}}</td>
+        <td>{{file_object.size}}</td>
+        <td>{{file_object.is_dir}}</td>
+        <td>{{file_object.last_modified}}</td>
+    </tr>
+    {% endfor %}
+
+</table>

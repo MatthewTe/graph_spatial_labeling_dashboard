@@ -1,0 +1,28 @@
+.minio_objects_table {
+    margin-top: 2rem;
+    width: 50vw;
+    border-collapse: collapse; /* Merge adjacent borders */
+    display: block; /* Ensure scrolling applies to the table content */
+    max-height: 700px; /* Set the maximum height */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.minio_objects_table th,
+.minio_objects_table td {
+    border: 1px solid #ddd; /* Add borders for all cells */
+    padding: 8px; /* Add padding for better readability */
+    text-align: left; /* Align text to the left */
+}
+
+.minio_objects_table th {
+    background-color: #f4f4f4; /* Light gray background for headers */
+    font-weight: bold; /* Make header text bold */
+}
+
+.minio_objects_table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Zebra striping for rows */
+}
+
+.minio_objects_table tr:hover {
+    background-color: #f1f1f1; /* Highlight row on hover */
+}

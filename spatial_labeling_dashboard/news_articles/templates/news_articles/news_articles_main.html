@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block scripts %}
+    <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@geoarrow/deck.gl-layers@0/dist/dist.umd.min.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@3.0.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/nodeId_table_styling.css' %}">
+    <link rel="stylesheet" href="{% static 'css/single_node_table_styling.css' %}">
+    <link rel="stylesheet" href="{% static 'css/minio_objects_table_styling.css' %}">
+    <script src="{% static 'news_articles/js/news_articles_deckgl.js' %}"></script>
+{% endblock scripts %}
+
+
+{% block main %}
+
+    <textarea
+        style="width: 100%; height: 200px;"
+        type="text" 
+        name="inputText"
+        hx-post={% url 'htmx-generate_nodes_table' %}
+        hx-target="#nodeIdTable"
+        hx-trigger="keyup changed delay:1000ms">
+    </textarea>
+
+    <div id="nodeIdTable" style="margin-top: 2rem;"></div>
+
+    <style>
+        #container {
+            display: flex; /* Use flexbox layout */
+            justify-content: space-between; /* Add space between the two divs */
+            align-items: flex-start; /* Align items at the top */
+            width: 100%; /* Full screen width */
+            box-sizing: border-box;
+        }
+
+        #unique_node_attrs_table, #minio_search_component {
+            flex: 1 1 50%; /* Each takes 48% width and grows/shrinks as needed */
+            max-width: 49%; /* Ensure no more than 48% of the width */
+            padding-top: 2rem;
+            box-sizing: border-box; /* Include padding in the width */
+        } 
+    </style>
+    <div id="container">
+        <div id="unique_node_attrs_table" style="padding-top: 6rem;"></div>
+        <div id="minio_search_component" style="padding-top: 2rem;"></div>
+    </div>
+
+    <style>
+        #news_articles_deckgl_component {
+            width: 99%;
+            height: 700px; /* Adjust this height */
+            margin: 1rem;
+            border: 1px solid #000000;
+        }
+    </style>
+
+    <div>
+        <label for="minio_parquet_rendering_path">Minio Rendering Path:</label>
+        <input type="text" name="minio_parquet_rendering_path" id="minio_parquet_rendering_path">
+    </div>
+    {{ stream_spatial_parquet_url|json_script:'stream_spatial_parquet_url'}}
+    {% csrf_token %}
+    <div id="news_articles_deckgl_component" style="padding-top: 2rem;"></div>
+
+{% endblock main %}

@@ -1,0 +1,26 @@
+.singleNode-table {
+    border-collapse: collapse; /* Merge adjacent borders */
+    display: block; /* Ensure scrolling applies to the table content */
+    max-height: 700px; /* Set the maximum height */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.singleNode-table th,
+.singleNode-table td {
+    border: 1px solid #ddd; /* Add borders for all cells */
+    padding: 8px; /* Add padding for better readability */
+    text-align: left; /* Align text to the left */
+}
+
+.singleNode-table th {
+    background-color: #f4f4f4; /* Light gray background for headers */
+    font-weight: bold; /* Make header text bold */
+}
+
+.singleNode-table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Zebra striping for rows */
+}
+
+.singleNode-table tr:hover {
+    background-color: #f1f1f1; /* Highlight row on hover */
+}
