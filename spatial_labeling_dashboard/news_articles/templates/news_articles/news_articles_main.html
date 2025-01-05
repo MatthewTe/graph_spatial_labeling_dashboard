@@ -62,6 +62,16 @@
         <label for="minio_parquet_rendering_path">Minio Rendering Path:</label>
         <input type="text" name="minio_parquet_rendering_path" id="minio_parquet_rendering_path">
     </div>
+    <div>
+        <label for="rendered_spatial_dataset_search">Pan To Spatial Search:</label>
+        <input 
+            type="text" 
+            name="rendered_spatial_dataset_search" 
+            id="rendered_spatial_dataset_search" 
+            list="rendered_spatial_dataset_search_datalist"
+        />
+        <datalist id="rendered_spatial_dataset_search_datalist"></datalist>
+    </div>
     {{ stream_spatial_parquet_url|json_script:'stream_spatial_parquet_url'}}
     {% csrf_token %}
     <div id="news_articles_deckgl_component" style="padding-top: 2rem;"></div>

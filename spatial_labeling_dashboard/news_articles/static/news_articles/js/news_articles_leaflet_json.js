@@ -9,10 +9,18 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     const minoFileInputPath = document.getElementById('minio_parquet_rendering_path');
     const streamSpatialDataComponent = document.getElementById("stream_spatial_parquet_url").textContent;
     const spatialParquetStreamUrl = window.location.origin.concat(streamSpatialDataComponent.slice(0,-1).replace('"', ''));
+    const spatialSearchDataList = document.getElementById("rendered_spatial_dataset_search_datalist")
+
+    const spatialFieldNameMap = new Map();
 
     minoFileInputPath.addEventListener("keypress", (e) => {
         if (e.key === "Enter") {
-            
+
+            spatialFieldNameMap.clear();
+            while (spatialSearchDataList.firstChild) {
+                spatialSearchDataList.removeChild(spatialSearchDataList.firstChild);
+            }
+
             // Needs to be grabbed here because the component gets rendered via an ajax call after initalization:
             const minioBucket = document.getElementById('minio_bucket_dropdown').value
 
@@ -31,7 +39,33 @@ document.addEventListener("DOMContentLoaded", async (event) => {
             .then((response) => response)
             .then((response) => response.json())
             .then((data) =>  {
-                L.geoJSON(JSON.parse(data)).addTo(map);
+                L.geoJSON(JSON.parse(data), {
+                    onEachFeature: (feature, layer) => {
+
+                        spatialFieldNameMap.set(feature.properties.name, feature.geometry.coordinates[0])
+                        var option = document.createElement('option');
+                        option.innerHTML = feature.properties.name;
+                        spatialSearchDataList.appendChild(option);
+                    }
+                })
+                .bindPopup(function (layer) {
+                    return layer.feature.properties.name
+                })
+                .on("popupopen", function (event) {
+                    var selectedPopupName = event.popup._contentNode.innerHTML;
+                    console.log(spatialFieldNameMap[selectedPopupName])
+                })
+                .addTo(map);
+
+                // Also needs to create the dropdown event listener that pans when selects a name location:
+                const panToSpatialFeatureSearch = document.getElementById('rendered_spatial_dataset_search')
+                panToSpatialFeatureSearch.addEventListener('keypress', (e) => {
+                    if (e.key === "Enter") {
+                        var firstVertex = spatialFieldNameMap.get(e.target.value);
+                        map.flyTo([firstVertex[1], firstVertex[0]], 18);
+                    }
+                })
+
             })
 
         }
