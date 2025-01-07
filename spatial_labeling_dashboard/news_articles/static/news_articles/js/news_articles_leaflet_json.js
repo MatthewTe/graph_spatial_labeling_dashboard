@@ -8,68 +8,74 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const minoFileInputPath = document.getElementById('minio_parquet_rendering_path');
     const streamSpatialDataComponent = document.getElementById("stream_spatial_parquet_url").textContent;
-    const spatialParquetStreamUrl = window.location.origin.concat(streamSpatialDataComponent.slice(0,-1).replace('"', ''));
-    const spatialSearchDataList = document.getElementById("rendered_spatial_dataset_search_datalist")
+    const htmxRenderLabelingComponent = document.getElementById("render_news_article_labeling_component_url").textContent;
 
+    const spatialParquetStreamUrl = window.location.origin.concat(streamSpatialDataComponent.slice(0,-1).replace('"', ''));
+    const renderLabelOutputUrl = window.location.origin.concat(htmxRenderLabelingComponent.slice(0, -1).replace('"', '').replace(/\/None/g, ""));
+    const spatialSearchDataList = document.getElementById("rendered_spatial_dataset_search_datalist")
+    
     const spatialFieldNameMap = new Map();
 
-    minoFileInputPath.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
+    fetch(
+        spatialParquetStreamUrl,
+        {
+            method: "POST",
+            headers: {"X-CSRFToken": csrftoken},
+            body: JSON.stringify({
+                format_type: 'geojson',
+                parquet_path: 'all_roads_tt.parquet',
+                bucket_name: 'test-bucket'
+            })
+        }
+    )
+    .then((response) => response)
+    .then((response) => response.json())
+    .then((data) =>  {
+        const roadsVectorLayer = L.geoJSON(JSON.parse(data), {
+            onEachFeature: (feature, layer) => {
 
-            spatialFieldNameMap.clear();
-            while (spatialSearchDataList.firstChild) {
-                spatialSearchDataList.removeChild(spatialSearchDataList.firstChild);
+                spatialFieldNameMap.set(feature.properties.name, feature.geometry.coordinates[0])
+                var option = document.createElement('option');
+                option.innerHTML = feature.properties.name;
+                spatialSearchDataList.appendChild(option);
+            }
+        })
+        .bindPopup(function (layer) {
+            return layer.feature.properties.name
+        })
+        .on("popupopen", function (event) {
+            var selectedPopupName = event.popup._contentNode.innerHTML;
+            var selectedPoint = event.popup._latlng
+            
+            // O(n^2) yikes
+            var renderedSingleNodeTable = document.getElementById('singleNode-table')
+            var selectedNodeId;
+            for (let i = 0, row; row = renderedSingleNodeTable.rows[i]; i++ ) {
+                for (let j = 0, col; col = row.cells[j]; j++) {
+                    if (col.innerHTML === "id") {
+                        selectedNodeId = row.cells[j+1].innerHTML
+                    }
+                }
             }
 
-            // Needs to be grabbed here because the component gets rendered via an ajax call after initalization:
-            const minioBucket = document.getElementById('minio_bucket_dropdown').value
-
-            fetch(
-                spatialParquetStreamUrl,
-                {
-                    method: "POST",
-                    headers: {"X-CSRFToken": csrftoken},
-                    body: JSON.stringify({
-                        format_type: 'geojson',
-                        parquet_path: e.target.value,
-                        bucket_name: minioBucket
-                    })
+            // This is broken for some reason I can't pass values through the ajax request directly:
+            htmx.ajax("POST", `${renderLabelOutputUrl}/${selectedPopupName}/${selectedPoint.lat}/${selectedPoint.lng}/${selectedNodeId}`, {
+                target: '#news_articles_label_output_component',
                 }
             )
-            .then((response) => response)
-            .then((response) => response.json())
-            .then((data) =>  {
-                L.geoJSON(JSON.parse(data), {
-                    onEachFeature: (feature, layer) => {
-
-                        spatialFieldNameMap.set(feature.properties.name, feature.geometry.coordinates[0])
-                        var option = document.createElement('option');
-                        option.innerHTML = feature.properties.name;
-                        spatialSearchDataList.appendChild(option);
-                    }
-                })
-                .bindPopup(function (layer) {
-                    return layer.feature.properties.name
-                })
-                .on("popupopen", function (event) {
-                    var selectedPopupName = event.popup._contentNode.innerHTML;
-                    console.log(spatialFieldNameMap[selectedPopupName])
-                })
-                .addTo(map);
-
-                // Also needs to create the dropdown event listener that pans when selects a name location:
-                const panToSpatialFeatureSearch = document.getElementById('rendered_spatial_dataset_search')
-                panToSpatialFeatureSearch.addEventListener('keypress', (e) => {
-                    if (e.key === "Enter") {
-                        var firstVertex = spatialFieldNameMap.get(e.target.value);
-                        map.flyTo([firstVertex[1], firstVertex[0]], 18);
-                    }
-                })
-
             })
 
-        }
-    }) 
+        var layerControl = L.control.layers(null, {"osm_roads": roadsVectorLayer}).addTo(map);
+        
 
+        // Also needs to create the dropdown event listener that pans when selects a name location:
+        const panToSpatialFeatureSearch = document.getElementById('rendered_spatial_dataset_search')
+        panToSpatialFeatureSearch.addEventListener('keypress', (e) => {
+            if (e.key === "Enter") {
+                var firstVertex = spatialFieldNameMap.get(e.target.value);
+                map.flyTo([firstVertex[1], firstVertex[0]], 18);
+            }
+        })
 
+    })
 })

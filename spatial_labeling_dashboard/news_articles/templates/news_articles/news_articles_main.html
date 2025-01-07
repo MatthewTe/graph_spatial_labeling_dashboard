@@ -36,17 +36,9 @@
             width: 100%; /* Full screen width */
             box-sizing: border-box;
         }
-
-        #unique_node_attrs_table, #minio_search_component {
-            flex: 1 1 50%; /* Each takes 48% width and grows/shrinks as needed */
-            max-width: 49%; /* Ensure no more than 48% of the width */
-            padding-top: 2rem;
-            box-sizing: border-box; /* Include padding in the width */
-        } 
     </style>
     <div id="container">
         <div id="unique_node_attrs_table" style="padding-top: 6rem;"></div>
-        <div id="minio_search_component" style="padding-top: 2rem;"></div>
     </div>
 
     <style>
@@ -59,10 +51,6 @@
     </style>
 
     <div>
-        <label for="minio_parquet_rendering_path">Minio Rendering Path:</label>
-        <input type="text" name="minio_parquet_rendering_path" id="minio_parquet_rendering_path">
-    </div>
-    <div>
         <label for="rendered_spatial_dataset_search">Pan To Spatial Search:</label>
         <input 
             type="text" 
@@ -73,7 +61,8 @@
         <datalist id="rendered_spatial_dataset_search_datalist"></datalist>
     </div>
     {{ stream_spatial_parquet_url|json_script:'stream_spatial_parquet_url'}}
+    {{ render_news_article_labeling_component_url|json_script:'render_news_article_labeling_component_url'}}
     {% csrf_token %}
     <div id="news_articles_deckgl_component" style="padding-top: 2rem;"></div>
-
+    <div id="news_articles_label_output_component"></div>
 {% endblock main %}
