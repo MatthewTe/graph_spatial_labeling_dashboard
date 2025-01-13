@@ -23,8 +23,8 @@ document.addEventListener("DOMContentLoaded", async (event) => {
             headers: {"X-CSRFToken": csrftoken},
             body: JSON.stringify({
                 format_type: 'geojson',
-                parquet_path: 'all_roads_tt.parquet',
-                bucket_name: 'test-bucket'
+                parquet_path: 'layers/tt_roads.parquet',
+                bucket_name: 'trinidad-tobago'
             })
         }
     )
@@ -59,13 +59,40 @@ document.addEventListener("DOMContentLoaded", async (event) => {
             }
 
             // This is broken for some reason I can't pass values through the ajax request directly:
+            console.log("Hello World?")
             htmx.ajax("POST", `${renderLabelOutputUrl}/${selectedPopupName}/${selectedPoint.lat}/${selectedPoint.lng}/${selectedNodeId}`, {
                 target: '#news_articles_label_output_component',
                 }
             )
+            });
+
+        fetch(
+            spatialParquetStreamUrl,
+            {
+                method: "POST",
+                headers: {"X-CSRFToken": csrftoken},
+                body: JSON.stringify({
+                    format_type: 'geojson',
+                    parquet_path: 'layers/tt_admin_regions.parquet',
+                    bucket_name: 'trinidad-tobago'
+                })
+            }
+        )
+        .then((response) => response)
+        .then((response) => response.json())
+        .then((data) =>  {
+            const adminPolygonVectorLayer = L.geoJSON(JSON.parse(data), {
+            })
+            .bindPopup((layer) => {
+                return layer.feature.properties.NAME_1
             })
 
-        var layerControl = L.control.layers(null, {"osm_roads": roadsVectorLayer}).addTo(map);
+            var layerControl = L.control.layers(null, {
+                "osm_roads": roadsVectorLayer, 
+                "osm_admin_areas": adminPolygonVectorLayer
+            }).addTo(map);
+        })
+
         
 
         // Also needs to create the dropdown event listener that pans when selects a name location:

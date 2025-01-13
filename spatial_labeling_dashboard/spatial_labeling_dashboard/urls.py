@@ -8,7 +8,8 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("news_articles/", include("news_articles.urls")),
-    path("stream_minio_parquet_data/", views.stream_minio_parquet_spatial_data, name="stream_minio_parquet_spatial_data"),
+    path("manage_static_files/", include("upload_static_files.urls")),
+    path("stream_minio_parquet_data/", views.stream_minio_parquet_spatial_data, name="stream_minio_parquet_spatial_data")
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 htmx_patterns = [

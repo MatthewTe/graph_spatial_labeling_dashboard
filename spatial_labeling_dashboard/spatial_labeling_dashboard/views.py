@@ -132,6 +132,6 @@ def stream_minio_parquet_spatial_data(request):
         return response
 
     elif request_body_dict['format_type'] == "geojson":
-        gdf: gpd.GeoDataFrame = gpd.read_parquet(full_parquet_path, filesystem=fs, columns=['geometry', 'name'])
+        gdf: gpd.GeoDataFrame = gpd.read_parquet(full_parquet_path, filesystem=fs)
         geojson = gdf.to_json()
         return JsonResponse(geojson, safe=False)

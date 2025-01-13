@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block scripts %}
+    <link rel="stylesheet" href="{% static 'css/minio_objects_table_styling.css' %}">
+    <link rel="stylesheet" href="{% static 'css/single_node_table_styling.css' %}">
+{% endblock scripts %}
+
+
+{% block main %}
+<div 
+    hx-post="{% url 'htmx-generate_minio_search_component' %}"
+    hx-trigger="load"
+    style="margin-bottom: 2rem;"
+>
+</div>
+
+<div>
+    <form 
+        hx-post="{% url 'htmx-upload_static_file' %}" 
+        hx-encoding="multipart/form-data" 
+        hx-include="#minio_bucket_dropdown"
+    >
+
+        <label for="uploaded_file_prefix">File Prefix</label>
+        <input type="text" id="uploaded_file_prefix" name="uploaded_file_prefix">
+        <input type="file" name="file">
+        <button>
+            Upload
+        </button>
+    </form>
+</div>
+{% endblock main %}

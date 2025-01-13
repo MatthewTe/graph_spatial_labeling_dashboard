@@ -46,6 +46,12 @@ else:
         "password": os.environ.get("NEO4J_PASSWORD_PROD")
     }
 
+# App specific configs:
+NEWS_ARTICLES_LAYERS = {
+    "tt_roads": {"bucket": "trinidad-tobago", "prefix": "layers/tt_roads.parquet"},
+    "tt_regions": {"bucket": "trinidad-tobago", "prefix": "layers/tt_admin_regions.parquet"}
+}
+
 ALLOWED_HOSTS = ['*']
 
 # Application definition
@@ -59,6 +65,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'template_partials',
 
+    'upload_static_files',
     'news_articles'
 
 ]

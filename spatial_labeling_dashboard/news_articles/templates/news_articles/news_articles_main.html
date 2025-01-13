@@ -24,6 +24,12 @@
         hx-post={% url 'htmx-generate_nodes_table' %}
         hx-target="#nodeIdTable"
         hx-trigger="keyup changed delay:1000ms">
+MATCH (n:Entity:Article:Trinidad)
+RETURN 
+    n.id AS nodeId,
+    labels(n) AS nodeLabels,
+    EXISTS { MATCH (n)-[:SPATIAL_LABEL]-() } AS hasSpatialRelationship
+
     </textarea>
 
     <div id="nodeIdTable" style="margin-top: 2rem;"></div>
