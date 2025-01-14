@@ -13,6 +13,7 @@ import pyarrow as pa
 
 import s3fs
 import json
+import requests
 
 """
 MATCH (n)
@@ -135,3 +136,18 @@ def stream_minio_parquet_spatial_data(request):
         gdf: gpd.GeoDataFrame = gpd.read_parquet(full_parquet_path, filesystem=fs)
         geojson = gdf.to_json()
         return JsonResponse(geojson, safe=False)
+    
+def execute_neo4j_query(request):
+
+    if request.method == "POST":
+        if request.POST.get("news_articles_label_output_json", False):
+            
+            api_request_body = request.POST.get("news_articles_label_output_json")
+            api_request_json = json.loads(api_request_body)
+            node_edge_creation_response = requests.post(
+                f"{settings.NEO4J_CONFIG['api_url']}/v1/api/run_query", 
+                json=api_request_json
+            )       
+            return HttpResponse(node_edge_creation_response.content)
+    
+    return HttpResponse("HELLO WORLD")

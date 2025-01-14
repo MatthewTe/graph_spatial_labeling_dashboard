@@ -7,5 +7,10 @@
     {{json_request | safe}}
     </textarea>
 
-    <button>Submit Query</button>
+    <button
+        hx-post="{% url 'htmx-render_neo4j_request_to_api' %}"
+        hx-include="#news_articles_label_output_json"
+        hx-target="#neo4j_query_response_output"
+        hx-trigger="click"
+    >Submit Query</button>
 </div>

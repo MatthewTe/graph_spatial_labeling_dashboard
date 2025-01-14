@@ -16,7 +16,8 @@ htmx_patterns = [
     path("render_unique_node_table/", views.generate_nodes_table, name="htmx-generate_nodes_table"),
     path("render_single_node_attrs_table/", views.generate_node_attrs_tbl, name="htmx-generate_node_attrs_table"),
     path("render_minio_search_component/", views.generate_minio_search_component, name="htmx-generate_minio_search_component"),
-    path("render_minio_objects/", views.search_minio_objects, name="htmx-render_minio_objects_from_search")
+    path("render_minio_objects/", views.search_minio_objects, name="htmx-render_minio_objects_from_search"),
+    path("render_neo4j_request_to_api/", views.execute_neo4j_query, name="htmx-render_neo4j_request_to_api")
 ]
 
 urlpatterns = urlpatterns + htmx_patterns

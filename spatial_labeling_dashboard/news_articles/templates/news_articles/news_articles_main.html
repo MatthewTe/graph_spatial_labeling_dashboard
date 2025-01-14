@@ -26,10 +26,10 @@
         hx-trigger="load,keyup changed delay:1000ms">
 MATCH (n:Entity:Article:Trinidad)
 RETURN 
-    n.id AS nodeId,
-    labels(n) AS nodeLabels,
-    EXISTS { MATCH (n)-[:SPATIAL_LABEL]-() } AS hasSpatialRelationship
-
+n.id AS nodeId,
+labels(n) AS nodeLabels,
+EXISTS { MATCH (n)-[:SPATIAL_LABEL]-() } AS hasSpatialRelationship
+LIMIT 10
     </textarea>
 
     <div id="nodeIdTable" style="margin-top: 2rem;"></div>
@@ -71,9 +71,13 @@ RETURN
     {{ render_news_article_labeling_component_url|json_script:'render_news_article_labeling_component_url'}}
     {% csrf_token %}
 
-    <div style="display: flex; height: 100vh; flex-direction: row;">
+    <div style="display: flex; height: 70vh; flex-direction: row;">
         <div id="news_articles_deckgl_component" style="flex: 1; padding-top: 1.5rem;"></div>
         <div id="news_articles_label_output_component" style="flex: 1; padding-top: 0.75rem;"></div>
+    </div>
+
+    <div id="neo4j_query_response_output">
+
     </div>
 
 {% endblock main %}
