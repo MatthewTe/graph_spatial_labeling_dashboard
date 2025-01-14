@@ -20,6 +20,7 @@
         hx-post="{% url 'htmx-upload_static_file' %}" 
         hx-encoding="multipart/form-data" 
         hx-include="#minio_bucket_dropdown"
+        hx-target="#uploaded_static_file_output"
     >
 
         <label for="uploaded_file_prefix">File Prefix</label>
@@ -29,5 +30,7 @@
             Upload
         </button>
     </form>
+
+    <div id="uploaded_static_file_output"></div>
 </div>
 {% endblock main %}

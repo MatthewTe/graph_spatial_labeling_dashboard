@@ -33,32 +33,35 @@ def upload_static_file(request):
             try:
                 file_response = client.stat_object(bucket, prefix)
                 print(f"File: {file_response.object_name} exists")
-                return HttpResponse(f"{file_response.object_name} already exists in blob storage")
+                file_exists = True
             except Exception as e:
+                file_exists = False
                 print(f"File {bucket, prefix} does not exist")
 
             with GraphDatabase.driver(settings.NEO4J_CONFIG['endpoint'], auth=neo4j_auth) as driver:
                 query = "MATCH (n {id: $id}) RETURN n"
                 all_node_params = driver.execute_query(query, id=node_id)
+                print(all_node_params)
                 node_params_dict = dict(all_node_params.records)
 
                 if len(node_params_dict) == 0:
                   
                     try:
-                        file_stream = io.BytesIO(request.FILES['file'].read())
-                        file_stream.seek(0)
+                        if file_exists:
+                            file_stream = io.BytesIO(request.FILES['file'].read())
+                            file_stream.seek(0)
 
-                        result = client.put_object(
-                            bucket,
-                            prefix,
-                            file_stream,
-                            file_stream.getbuffer().nbytes,
-                            metadata={"graph_static_file_id": node_id}
-                        )
+                            result = client.put_object(
+                                bucket,
+                                prefix,
+                                file_stream,
+                                file_stream.getbuffer().nbytes,
+                                metadata={"graph_static_file_id": node_id}
+                            )
 
-                        print("created {0} object; etag: {1}, version-id: {2}".format(
-                            result.object_name, result.etag, result.version_id)
-                        )
+                            print("created {0} object; etag: {1}, version-id: {2}".format(
+                                result.object_name, result.etag, result.version_id)
+                            )
 
                         file_creation_request = [
                             {

@@ -23,7 +23,7 @@
         name="inputText"
         hx-post={% url 'htmx-generate_nodes_table' %}
         hx-target="#nodeIdTable"
-        hx-trigger="keyup changed delay:1000ms">
+        hx-trigger="load,keyup changed delay:1000ms">
 MATCH (n:Entity:Article:Trinidad)
 RETURN 
     n.id AS nodeId,
@@ -56,7 +56,7 @@ RETURN
         }
     </style>
 
-    <div>
+    <div style="margin-top: 1rem;">
         <label for="rendered_spatial_dataset_search">Pan To Spatial Search:</label>
         <input 
             type="text" 
@@ -67,8 +67,13 @@ RETURN
         <datalist id="rendered_spatial_dataset_search_datalist"></datalist>
     </div>
     {{ stream_spatial_parquet_url|json_script:'stream_spatial_parquet_url'}}
+    {{ layers_config|json_script:'tt_news_article_layers'}}
     {{ render_news_article_labeling_component_url|json_script:'render_news_article_labeling_component_url'}}
     {% csrf_token %}
-    <div id="news_articles_deckgl_component" style="padding-top: 2rem;"></div>
-    <div id="news_articles_label_output_component"></div>
+
+    <div style="display: flex; height: 100vh; flex-direction: row;">
+        <div id="news_articles_deckgl_component" style="flex: 1; padding-top: 1.5rem;"></div>
+        <div id="news_articles_label_output_component" style="flex: 1; padding-top: 0.75rem;"></div>
+    </div>
+
 {% endblock main %}

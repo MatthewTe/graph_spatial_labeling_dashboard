@@ -18,24 +18,34 @@ def spatial_labeling_main(request):
                 'field_name': None,  
                 'lat': None,                
                 'lng': None,
-                'node_id': None
+                'node_id': None,
+                'column_name': None,
+                'file_prefix': None
             }
-        )
+        ),
+        "layers_config": settings.NEWS_ARTICLES_LAYERS 
         })
 
-def load_news_article_label_component(request, field_name: str, lat: float, lng: float, node_id: str):
-
+def load_news_article_label_component(
+    request, 
+    field_name: str, 
+    lat: float, 
+    lng: float, 
+    node_id: str, 
+    column_name: str, 
+    file_prefix: str
+):
     default_json_spatial_label = [
         {
             "type":"edge",
             "query_type": "MERGE",
             "connection": {
                 "from": node_id,
-                "to": str(uuid.uuid5(uuid.NAMESPACE_URL, "layers/tt_roads.parquet"))
+                "to": str(uuid.uuid5(uuid.NAMESPACE_URL, file_prefix.replace("-", "/")))
             },
             "labels": ["SPATIAL_LABEL"],
             "properties": {
-                "unique_field_name": "name",
+                "unique_field_name": column_name,
                 "value": field_name,
                 "geometry": {"latitude": lat, "longitude": lng}
             }
@@ -43,6 +53,6 @@ def load_news_article_label_component(request, field_name: str, lat: float, lng:
     ]
 
     return render(request, "news_articles/label_output_component.html", {
-        'json_request': json.dumps(default_json_spatial_label, indent=2)
+        'json_request': json.dumps(default_json_spatial_label, indent=1)
     })
 

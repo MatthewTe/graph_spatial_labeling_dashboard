@@ -11,29 +11,28 @@ document.addEventListener("DOMContentLoaded", async (event) => {
     const htmxRenderLabelingComponent = document.getElementById("render_news_article_labeling_component_url").textContent;
 
     const spatialParquetStreamUrl = window.location.origin.concat(streamSpatialDataComponent.slice(0,-1).replace('"', ''));
+    const layersConfig = JSON.parse(document.getElementById("tt_news_article_layers").textContent);
+    
     const renderLabelOutputUrl = window.location.origin.concat(htmxRenderLabelingComponent.slice(0, -1).replace('"', '').replace(/\/None/g, ""));
     const spatialSearchDataList = document.getElementById("rendered_spatial_dataset_search_datalist")
     
     const spatialFieldNameMap = new Map();
 
-    fetch(
-        spatialParquetStreamUrl,
-        {
+    const createdLayers = {}
+    for (const [key, value] of Object.entries(layersConfig)) {
+        const layerResponse = await fetch(spatialParquetStreamUrl, {
             method: "POST",
             headers: {"X-CSRFToken": csrftoken},
             body: JSON.stringify({
                 format_type: 'geojson',
-                parquet_path: 'layers/tt_roads.parquet',
-                bucket_name: 'trinidad-tobago'
-            })
-        }
-    )
-    .then((response) => response)
-    .then((response) => response.json())
-    .then((data) =>  {
-        const roadsVectorLayer = L.geoJSON(JSON.parse(data), {
-            onEachFeature: (feature, layer) => {
+                parquet_path: value.prefix,
+                bucket_name: value.bucket
+            }
+        )})
 
+        const layerResponseJSON = await layerResponse.json()
+        var vectorLayer = L.geoJSON(JSON.parse(layerResponseJSON), {
+            onEachFeature: (feature, layer) => {
                 spatialFieldNameMap.set(feature.properties.name, feature.geometry.coordinates[0])
                 var option = document.createElement('option');
                 option.innerHTML = feature.properties.name;
@@ -41,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async (event) => {
             }
         })
         .bindPopup(function (layer) {
-            return layer.feature.properties.name
+            return layer.feature.properties[value.main_association_col]
         })
         .on("popupopen", function (event) {
             var selectedPopupName = event.popup._contentNode.innerHTML;
@@ -59,50 +58,23 @@ document.addEventListener("DOMContentLoaded", async (event) => {
             }
 
             // This is broken for some reason I can't pass values through the ajax request directly:
-            console.log("Hello World?")
-            htmx.ajax("POST", `${renderLabelOutputUrl}/${selectedPopupName}/${selectedPoint.lat}/${selectedPoint.lng}/${selectedNodeId}`, {
+            htmx.ajax("POST", `${renderLabelOutputUrl}/${selectedPopupName}/${selectedPoint.lat}/${selectedPoint.lng}/${selectedNodeId}/${value.main_association_col}/${value.prefix.replace("/", "-")}`, {
                 target: '#news_articles_label_output_component',
                 }
             )
-            });
+        });
 
-        fetch(
-            spatialParquetStreamUrl,
-            {
-                method: "POST",
-                headers: {"X-CSRFToken": csrftoken},
-                body: JSON.stringify({
-                    format_type: 'geojson',
-                    parquet_path: 'layers/tt_admin_regions.parquet',
-                    bucket_name: 'trinidad-tobago'
-                })
-            }
-        )
-        .then((response) => response)
-        .then((response) => response.json())
-        .then((data) =>  {
-            const adminPolygonVectorLayer = L.geoJSON(JSON.parse(data), {
-            })
-            .bindPopup((layer) => {
-                return layer.feature.properties.NAME_1
-            })
+        createdLayers[key] = vectorLayer
+    }
 
-            var layerControl = L.control.layers(null, {
-                "osm_roads": roadsVectorLayer, 
-                "osm_admin_areas": adminPolygonVectorLayer
-            }).addTo(map);
-        })
+    var layerControl = L.control.layers(null, createdLayers).addTo(map);
 
-        
-
-        // Also needs to create the dropdown event listener that pans when selects a name location:
-        const panToSpatialFeatureSearch = document.getElementById('rendered_spatial_dataset_search')
-        panToSpatialFeatureSearch.addEventListener('keypress', (e) => {
-            if (e.key === "Enter") {
-                var firstVertex = spatialFieldNameMap.get(e.target.value);
-                map.flyTo([firstVertex[1], firstVertex[0]], 18);
-            }
-        })
-
+    // Also needs to create the dropdown event listener that pans when selects a name location:
+    const panToSpatialFeatureSearch = document.getElementById('rendered_spatial_dataset_search')
+    panToSpatialFeatureSearch.addEventListener('keypress', (e) => {
+        if (e.key === "Enter") {
+            var firstVertex = spatialFieldNameMap.get(e.target.value);
+            map.flyTo([firstVertex[1], firstVertex[0]], 18);
+        }
     })
 })

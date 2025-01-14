@@ -48,8 +48,18 @@ else:
 
 # App specific configs:
 NEWS_ARTICLES_LAYERS = {
-    "tt_roads": {"bucket": "trinidad-tobago", "prefix": "layers/tt_roads.parquet"},
-    "tt_regions": {"bucket": "trinidad-tobago", "prefix": "layers/tt_admin_regions.parquet"}
+    "tt_roads": {
+        "bucket": "trinidad-tobago", 
+        "prefix": "layers/tt_roads.parquet",
+        "main_association_col": "name",
+        "cols_to_include": ['name', 'geometry']
+    },
+    "tt_regions": {
+        "bucket": "trinidad-tobago", 
+        "prefix":"layers/tt_admin_regions.parquet",
+        "main_association_col": "NAME_1",
+        "cols_to_include": ["NAME_1", 'geometry']
+    }
 }
 
 ALLOWED_HOSTS = ['*']
